@@ -50,6 +50,7 @@ class ConsentOption extends Model
         'label',
         'text',
         'is_mandatory',
+        'is_default',
         'force_user_update',
         'is_current',
         'enabled',
@@ -62,6 +63,7 @@ class ConsentOption extends Model
         'published_at'      => 'datetime:Y-m-d H:i:s',
         'enabled'           => 'boolean',
         'is_current'        => 'boolean',
+        'is_default'        => 'boolean',
         'force_user_update' => 'boolean',
         'is_mandatory'      => 'boolean',
     ];
