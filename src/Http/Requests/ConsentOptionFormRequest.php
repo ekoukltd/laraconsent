@@ -17,7 +17,7 @@ class ConsentOptionFormRequest extends FormRequest
     {
         return true;
     }
-    
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -32,6 +32,7 @@ class ConsentOptionFormRequest extends FormRequest
             'text'              => 'required|string',
             'enabled'           => 'boolean',
             'is_mandatory'      => 'boolean',
+            'is_default'        => 'boolean',
             'published_at'      => 'required|date_format:Y-m-d H:i',
             'force_user_update' => 'boolean',
             'sort_order'        => 'integer',
@@ -40,10 +41,10 @@ class ConsentOptionFormRequest extends FormRequest
                 Rule::in(config('laraconsent.models')),
             ],
         ];
-        
+
         return $rules;
     }
-    
+
     /**
      * Get the request's data from the request.
      *
@@ -59,6 +60,7 @@ class ConsentOptionFormRequest extends FormRequest
                                'text',
                                'is_mandatory',
                                'is_current',
+                               'is_default',
                                'published_at',
                                'enabled',
                                'force_user_update',
@@ -66,7 +68,7 @@ class ConsentOptionFormRequest extends FormRequest
                                'models'
                            ]);
     }
-    
+
     /**
      * Prepare the data for validation.
      *
