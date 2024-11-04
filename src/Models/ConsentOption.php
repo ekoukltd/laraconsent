@@ -135,6 +135,7 @@ class ConsentOption extends Model
     {
         return self::where('models','like',"%$className%")
             ->where('is_current',true)
+            ->where('is_default',true)
             ->where('enabled', true)
             ->where('published_at','<=',\Illuminate\Support\Carbon::now())
             ->pluck('key')
