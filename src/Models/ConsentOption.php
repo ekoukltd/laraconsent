@@ -32,14 +32,14 @@ class ConsentOption extends Model
 {
     use HasFactory;
     use UserCount;
-    
+
     /**
      * The "type" of the auto-incrementing ID.
      *
      * @var string
      */
     protected $keyType = 'integer';
-    
+
     /**
      * @var array
      */
@@ -65,7 +65,7 @@ class ConsentOption extends Model
         'force_user_update' => 'boolean',
         'is_mandatory'      => 'boolean',
     ];
-    
+
     /**
      * @return string
      */
@@ -73,7 +73,7 @@ class ConsentOption extends Model
     {
         return $this->title." V".$this->version;
     }
-    
+
     /**
      * @param $keys
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
@@ -88,7 +88,7 @@ class ConsentOption extends Model
                 'published_at', '<=', now()
             );
     }
-	
+
 	public static function allActiveConsents()
 	{
 		return self::query()
@@ -98,7 +98,7 @@ class ConsentOption extends Model
 			           'published_at', '<=', now()
 		           );
 	}
-    
+
     /**
      * @return mixed
      */
@@ -115,7 +115,7 @@ class ConsentOption extends Model
         }
         return json_decode(json_encode($models));
     }
-    
+
     /**
      * @param $model
      * @return string
@@ -124,7 +124,7 @@ class ConsentOption extends Model
     {
         return substr($model, strrpos($model, '\\') + 1);
     }
-    
+
     /**
      * @param $className
      * @return array
@@ -138,7 +138,7 @@ class ConsentOption extends Model
             ->pluck('key')
             ->toArray();
     }
-    
+
     /**
      * @return array
      */
@@ -150,7 +150,7 @@ class ConsentOption extends Model
             ->pluck('key')
             ->toArray();
     }
-    
+
     /**
      * @return int
      */
@@ -167,7 +167,7 @@ class ConsentOption extends Model
     {
         return ConsentOptionFactory::new();
     }
-	
+
 	public function nextConsentReadyToActivate()
 	{
 		return ConsentOption::query()
@@ -177,7 +177,7 @@ class ConsentOption extends Model
 		             ->whereDate('published_at', '>=', $this->published_at)
 		             ->first();
 	}
-    
+
     /**
      * @param $user
      * @return mixed
@@ -189,10 +189,10 @@ class ConsentOption extends Model
             ->where('consentable_id', $user->id)
             ->where('consentable_type', get_class($user))
             ->max('consent_option_id');
-        
+
         return ConsentOption::findOrFail($lastSeenVersionId);
     }
-    
+
     /**
      * @return int
      */
@@ -203,7 +203,7 @@ class ConsentOption extends Model
             ->where('accepted',true)
             ->count();
     }
-    
+
     /**
      * @return int
      */
@@ -213,7 +213,7 @@ class ConsentOption extends Model
             ->where('key', $this->key)
             ->count();
     }
-    
+
     /**
      * @return int
      */
@@ -223,7 +223,7 @@ class ConsentOption extends Model
             ->where('consent_option_id', $this->id)
             ->count();
     }
-    
+
     /**
      * @return int
      */
@@ -234,7 +234,7 @@ class ConsentOption extends Model
             ->where('key', $this->key)
             ->count();
     }
-    
+
     /**
      * @return int
      */
@@ -245,7 +245,7 @@ class ConsentOption extends Model
             ->where('key', $this->key)
             ->count();
     }
-    
+
     /**
      * @return \Illuminate\Database\Eloquent\Collection
      */
@@ -257,7 +257,7 @@ class ConsentOption extends Model
             ->where('key', $this->key)
             ->get();
     }
-	
+
 	/**
 	 * @return $this
 	 */
@@ -268,7 +268,7 @@ class ConsentOption extends Model
              ->update(['is_current' => true,'enabled'=>true]);
         return $this;
     }
-    
+
     /**
      * @return int
      */
@@ -278,10 +278,10 @@ class ConsentOption extends Model
             ->where('is_current', '=', 1)
             ->whereIn('id', $this->getAllVersionIds())
             ->update(['is_current' => false,'enabled'=>false]);
-	   
+
 		return $this;
     }
-    
+
     /**
      * @return array
      */
@@ -292,7 +292,18 @@ class ConsentOption extends Model
             ->pluck('id')
             ->toArray();
     }
-    
+
+    public function getNotificationClassNames(): array
+    {
+        $name = ucwords(Str::camel($this->key));
+        $basePath = '\\App\\Notifications\\';
+
+        return [
+                'accepted' => $basePath . $name . 'AcceptedNotification',
+                'declined' => $basePath . $name . 'DeclinedNotification',
+        ];
+    }
+
     /**
      * @return bool
      */
@@ -300,7 +311,7 @@ class ConsentOption extends Model
     {
         return ($this->enabled && $this->is_current);
     }
-    
+
     /**
      * @return boolean
      */
@@ -311,7 +322,7 @@ class ConsentOption extends Model
                 ->addMinute()
         );
     }
-    
+
     /**
      * @return int
      */
@@ -319,7 +330,7 @@ class ConsentOption extends Model
     {
         return $this->highestVersionNumber + 1;
     }
-    
+
     /**
      * @return int
      */
@@ -331,7 +342,7 @@ class ConsentOption extends Model
                 'version'
             );
     }
-    
+
     /**
      * @return bool
      */
@@ -339,7 +350,7 @@ class ConsentOption extends Model
     {
         return ($this->version == $this->highestVersionNumber);
     }
-    
+
     /**
      * @return ConsentOption
      */
@@ -350,7 +361,7 @@ class ConsentOption extends Model
             ->where('version', $this->highestVersionNumber)
             ->first();
     }
-    
+
     /**
      * @return string
      */
@@ -364,7 +375,7 @@ class ConsentOption extends Model
         }
         return trim($str);
     }
-    
+
     /**
      * @return string
      */
@@ -372,7 +383,7 @@ class ConsentOption extends Model
     {
         return $this->is_active ? '<span class="btn btn-sm btn-success"><i class="fa fa-check-circle" aria-hidden="true"></i> Active</span>' : ($this->is_current ? '<span class="btn btn-sm btn-danger"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Disabled</span>' : '<span class="btn btn-sm btn-info">'.($this->isHighestVersion ? 'draft' : 'locked').'</span>');
     }
-    
+
     /**
      * @return string
      */
@@ -380,7 +391,7 @@ class ConsentOption extends Model
     {
         return $this->is_mandatory ? '<span class="badge rounded-pill badge-success bg-success"><i class="fa fa-check-square" aria-hidden="true"></i> Mandatory</span>' : '<span class="badge rounded-pill badge-info bg-info"><i class="fa fa-question-circle" aria-hidden="true"></i> Optional</span>';
     }
-    
+
     /**
      * @return string
      */
@@ -388,7 +399,7 @@ class ConsentOption extends Model
     {
         return '<span class="badge rounded-pill badge-success bg-success"><i class="fa fa-thumbs-up"></i> Accepted '.$this->usersAcceptedTotal.'</span>';
     }
-    
+
     /**
      * @return string
      */
@@ -396,7 +407,7 @@ class ConsentOption extends Model
     {
         return $this->is_mandatory ? '' : '<span class="badge rounded-pill badge-danger bg-danger ms-2"><i class="fa fa-thumbs-down"></i> Declined '.$this->usersDeclinedTotal.'</span>';
     }
-    
+
     /**
      * @return $this
      */

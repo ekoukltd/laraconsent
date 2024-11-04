@@ -19,7 +19,7 @@ trait HasConsent
     {
         return ConsentOption::findbykeys($this->requiredConsentKeys())->get();
     }
-    
+
     /**
      * @return array
      */
@@ -27,7 +27,7 @@ trait HasConsent
     {
         return ConsentOption::getAllActiveKeysbyUserClass(class_basename($this));
     }
-    
+
     public function outstandingConsentValidators()
     {
         $consents = $this->outstandingConsents();
@@ -37,7 +37,7 @@ trait HasConsent
         }
         return $validationArray;
     }
-    
+
     /**
      * @return \Illuminate\Database\Eloquent\Collection
      */
@@ -51,9 +51,9 @@ trait HasConsent
             )
             ->orderBy('sort_order')
             ->get();
-      
+
     }
-    
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\MorphMany
      */
@@ -63,26 +63,26 @@ trait HasConsent
             ->withTimestamps()
             ->withPivot('accepted')
             ->using(ConsentOptionUser::class);
-            
+
     }
-    
+
     public function lastConsentByKey($key)
     {
         return $this->consents()->where('consentables.key',$key)->latest()->first();
     }
-    
+
     public function hasPreviousConsents($key)
     {
         return $this->consents()->where('consentables.key',$key)->count();
     }
-    
-    
+
+
     /**
      * @return mixed
      */
     public function activeConsents()
     {
-        
+
         $usersSeenConsents = DB::table('consentables')
             ->selectRaw('max(consent_option_id) as id')
             ->where('consentable_id',$this->id)
@@ -90,24 +90,27 @@ trait HasConsent
             ->groupBy('key')
             ->pluck('id')
             ->toArray();
-        
+
         return  $this->consents()
             ->wherePivotIn('consent_option_id', $usersSeenConsents)
             ->withPivot(['accepted','id']);
     }
-    
+
     /**
      * @return bool
      */
     public function hasRequiredConsents()
     {
+        /**
+         * Simple to understand method, although it makes 2 calls.  Should cache this really as it will get called by middleware on every request.
+         */
         $requiredConsents = ConsentOption::findbykeys($this->requiredConsentKeys())
-            ->where('force_user_update',true)
-            ->pluck('id')
-            ->toArray();
+                ->where('force_user_update',true)
+                ->pluck('id')
+                ->toArray();
         $givenConsents    = $this->consents()
-            ->pluck('consent_options.id')
-            ->toArray();
+                ->pluck('consent_options.id')
+                ->toArray();
         return !array_diff($requiredConsents, $givenConsents);
     }
 }
