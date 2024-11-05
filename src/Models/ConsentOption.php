@@ -5,6 +5,7 @@ namespace Ekoukltd\LaraConsent\Models;
 use Ekoukltd\LaraConsent\Database\Factories\ConsentOptionFactory;
 use Ekoukltd\LaraConsent\Traits\UserCount;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -135,11 +136,17 @@ class ConsentOption extends Model
     {
         return self::where('models','like',"%$className%")
             ->where('is_current',true)
-            ->where('is_default',true)
             ->where('enabled', true)
             ->where('published_at','<=',\Illuminate\Support\Carbon::now())
             ->pluck('key')
             ->toArray();
+    }
+
+    public static function scopeActiveForClass(Builder $builder, $className): Builder
+    {
+        return $builder->where('models','like',"%$className%")
+                ->where('is_current',true)
+                ->where('published_at','<=',\Illuminate\Support\Carbon::now());
     }
 
     /**
